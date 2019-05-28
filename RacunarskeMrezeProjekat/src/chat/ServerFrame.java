@@ -55,10 +55,6 @@ public class ServerFrame extends JFrame implements Observer{
 		serverFrame.setVisible(true);
 	}
 	
-	public static void main(String[] args) {
-		open();
-	}
-	
 	public Server getServer() {
 		return server;
 	}

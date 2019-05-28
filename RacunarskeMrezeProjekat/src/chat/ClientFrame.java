@@ -111,11 +111,6 @@ public class ClientFrame extends JFrame implements Observer{
 		clientFrame.setVisible(true);
 	}
 
-	// Testing
-	public static void main(String[] args) {
-		open();
-	}
-
 	class MyFocusListener implements FocusListener {
 		@Override
 		public void focusGained(FocusEvent e) {

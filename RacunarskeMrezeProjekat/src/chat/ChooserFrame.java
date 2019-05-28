@@ -66,10 +66,6 @@ public class ChooserFrame extends JFrame{
 		chooserFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 	
-	public static void main(String[] args) {
-		open();
-	}
-	
 	private GridBagConstraints getConstraints(int x, int y) {
 		GridBagConstraints constrain = new GridBagConstraints();
 		constrain.gridx = x;

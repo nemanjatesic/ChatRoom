@@ -119,14 +119,6 @@ public class Server implements Runnable,Listener {
 		return serverInstance;
 	}
 
-	public static void main(String[] args) {
-		try {
-			getInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
 	public static boolean isStarted() {
 		if (serverInstance == null)
 			return false;

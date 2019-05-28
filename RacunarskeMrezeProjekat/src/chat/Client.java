@@ -49,14 +49,6 @@ public class Client implements Runnable,Listener{
 		return outSocket;
 	}
 
-	public static void main(String[] args) {
-		try {
-			new Client("cao");
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	private String getIPv4Address() throws Exception{
 		String ip = "";
 		ip = InetAddress.getLocalHost().toString();

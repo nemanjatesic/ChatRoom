@@ -27,7 +27,7 @@ public class OpeningClientFrame extends JFrame {
 		setSize(400, 370);
 		servers = new JComboBox<>();
 		servers.addItem(Server.getInstance());
-		tfUsername = new JTextField(15);
+		tfUsername = new JTextField(20);
 		JLabel lblUsername = new JLabel("Enter a username : ");
 		JLabel lblServer = new JLabel("Choose server : ");
 		JPanel panel = new JPanel(new GridBagLayout());
@@ -60,11 +60,6 @@ public class OpeningClientFrame extends JFrame {
 	public static void open() {
 		OpeningClientFrame openingClientFrame = new OpeningClientFrame();
 		openingClientFrame.setVisible(true);
-	}
-
-	// Testing
-	public static void main(String[] args) {
-		open();
 	}
 
 	private GridBagConstraints getConstraints(int x, int y) {
