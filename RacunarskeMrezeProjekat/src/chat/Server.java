@@ -2,11 +2,15 @@ package chat;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.swing.Timer;
@@ -41,7 +45,7 @@ public class Server implements Runnable{
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 			users.add(out);
 			userSockets.add(socket);
-			userNames.add(name);
+			if (name != null) userNames.add(name);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -50,7 +54,7 @@ public class Server implements Runnable{
 	public void broadcast(Object sender, Object message) {
 		int i = 0;
 		for (PrintWriter user : users) {
-			if (sender == userSockets.get(i)) {
+			if ((Socket)sender == userSockets.get(i)) {
 				String tmp = "<";
 				if (!(message instanceof String))
 					return;
@@ -85,6 +89,11 @@ public class Server implements Runnable{
 		}
 	}
 
+	public static boolean isStarted() {
+		if (serverInstance == null) return false;
+		return true;
+	}
+	
 	private String getUserNickname(String nick) {
 		String tmp = "";
 		int i = 1;
@@ -101,28 +110,38 @@ public class Server implements Runnable{
 		}
 		return true;
 	}
-	
-	public static void newThread() throws Exception{
-		System.out.println("poz");
-		Socket socket = server_socket.accept();
-		ServerThread server_thread = new ServerThread(socket, serverInstance);
-		Thread thread = new Thread(server_thread);
-		thread.start();
-	}
 
 	@Override
 	public void run() {
 		try {
-			
+			Socket socket = new Socket(toString(), 2020);
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			while(true) {
-				System.out.println("cao");
-				Socket socket = server_socket.accept();
-				ServerThread server_thread = new ServerThread(socket, this);
-				Thread thread = new Thread(server_thread);
-				thread.start();
+				System.out.println("usao sam ovde");
+				String message = "";
+				message = in.readLine();
+				if (message.equals("EXITING_NOW"))
+					break;
+				broadcast(socket, message);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public String toString() {
+		String ip = "";
+		try {
+			ip = InetAddress.getLocalHost().toString();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+			return "";
+		}
+		if (ip.contains("/")) {
+			String[] split = ip.split("/");
+			ip = split[split.length - 1];
+		}
+		return ip;
 	}
 }

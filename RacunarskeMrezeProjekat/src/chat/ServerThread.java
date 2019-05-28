@@ -20,18 +20,16 @@ public class ServerThread implements Runnable {
 	public void run() {
 		try {
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String name = in.readLine();
-			server.addClient(socket, name);
+			//String name = in.readLine();
+			server.addClient(socket, "a");
 			while (true) {
+				System.out.println("usao sam ovde");
 				String message = "";
 				message = in.readLine();
-
 				if (message.equals("EXITING_NOW"))
 					break;
-
 				server.broadcast(socket, message);
 			}
-
 			in.close();
 			socket.close();
 

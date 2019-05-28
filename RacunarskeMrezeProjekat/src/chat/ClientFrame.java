@@ -34,12 +34,12 @@ public class ClientFrame extends JFrame {
 	public ClientFrame(String nickname) {
 		this.nickname = nickname;
 		
-		/*try {
+		try {
 			client = new Client(nickname);
 		}catch (Exception e) {
 			e.printStackTrace();
 			return;
-		}*/
+		}
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle(nickname + "'s chat");

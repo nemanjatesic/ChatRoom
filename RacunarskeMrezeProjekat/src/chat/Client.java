@@ -17,7 +17,6 @@ public class Client {
 	public Client(String nickname) throws Exception {
 		String ip = getIPv4Address();
 		System.out.println(ip);
-		Server.newThread();
 		socket = new Socket(ip, 2020);
 		this.nickname = nickname;
 		inSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
