@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -15,6 +16,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.Timer;
+import javax.swing.WindowConstants;
 
 public class OpeningClientFrame extends JFrame {
 	private JComboBox<Server> servers;
@@ -30,29 +33,8 @@ public class OpeningClientFrame extends JFrame {
 		JPanel panel = new JPanel(new GridBagLayout());
 		JButton btnJoin = new JButton("Join");
 
-		btnJoin.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (servers.getSelectedIndex() == -1) {
-					JOptionPane.showMessageDialog(null, "Please select some server!", "Error",
-							JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				String username = tfUsername.getText();
-				if (username.equals("")) {
-					JOptionPane.showMessageDialog(null, "Please enter username!", "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				if (!Server.IsNameViable(username)) {
-					JOptionPane.showMessageDialog(null, "Username is already taken!", "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				setVisible(false);
-				dispose();
-				ClientFrame cf = new ClientFrame(username);
-				cf.setVisible(true);	
-			}
-		});
+		btnJoin.addActionListener(new MyActionListener());
+		tfUsername.addActionListener(new MyActionListener());
 
 		GridBagConstraints c = getConstraints(0, 0);
 
@@ -70,7 +52,7 @@ public class OpeningClientFrame extends JFrame {
 		this.add(BorderLayout.CENTER, panel);
 		this.add(BorderLayout.SOUTH, btnJoin);
 
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("Client");
 		setLocationRelativeTo(null);
 	}
@@ -92,6 +74,34 @@ public class OpeningClientFrame extends JFrame {
 		constrain.insets = new Insets(20, 20, 0, 0);
 		constrain.anchor = GridBagConstraints.WEST;
 		return constrain;
+	}
+	
+	class MyActionListener implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (servers.getSelectedIndex() == -1) {
+				JOptionPane.showMessageDialog(null, "Please select some server!", "Error",
+						JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			String username = tfUsername.getText();
+			if (username.equals("")) {
+				JOptionPane.showMessageDialog(null, "Please enter username!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if (username.contains("<") || username.contains(">")) {
+				JOptionPane.showMessageDialog(null, "Username can't contain '<' or '>' !", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if (!Server.IsNameViable(username)) {
+				JOptionPane.showMessageDialog(null, "Username is already taken!", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			setVisible(false);
+			dispose();
+			ClientFrame cf = new ClientFrame(username);
+			cf.setVisible(true);
+		}
 	}
 
 }

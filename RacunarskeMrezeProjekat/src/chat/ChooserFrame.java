@@ -35,7 +35,8 @@ public class ChooserFrame extends JFrame{
 		btnServer.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ServerFrame.open();
+				if (!Server.isStarted()) 
+					ServerFrame.open();
 				btnClient.setEnabled(true);
 			}
 		});
@@ -55,6 +56,7 @@ public class ChooserFrame extends JFrame{
 		
 		this.add(BorderLayout.CENTER, panel);
 		setLocationRelativeTo(null);
+		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle("Choose");
 	}
 	

@@ -12,7 +12,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -21,7 +24,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultCaret;
 
 import observer.Listener;
 import observer.Observer;
@@ -37,15 +42,6 @@ public class ClientFrame extends JFrame implements Observer{
 	public ClientFrame(String nickname) {
 		this.nickname = nickname;
 		
-		try {
-			client = new Client(nickname);
-			client.addListener(this);
-		}catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setTitle(nickname + "'s chat");
 		setSize(470, 300);
 		setLocationRelativeTo(null);
@@ -56,15 +52,17 @@ public class ClientFrame extends JFrame implements Observer{
 		messageBox = new JTextField(30);
 		messageBox.addFocusListener(new MyFocusListener());
 		messageBox.setText("Type a message...");
-		messageBox.addActionListener(new MyActionListner());
+		messageBox.addActionListener(new MyActionListener());
 
 		chatBox = new JTextArea();
 		chatBox.setEditable(false);
 		chatBox.setLineWrap(true);
 		chatBox.setBorder(new EmptyBorder(5, 5, 5, 5));
+		DefaultCaret caret = (DefaultCaret)chatBox.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
 		sendMessage = new JButton("Send Message");
-		sendMessage.addActionListener(new MyActionListner());
+		sendMessage.addActionListener(new MyActionListener());
 
 		this.add(new JScrollPane(chatBox), BorderLayout.CENTER);
 
@@ -89,6 +87,23 @@ public class ClientFrame extends JFrame implements Observer{
 		this.add(BorderLayout.SOUTH, southPanel);
 
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		try {
+			client = new Client(nickname);
+			client.addListener(this);
+		}catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent windowEvent) {
+				client.getOutSocket().println("EXITING_NOW");
+				//Server.getInstance().removeClient(client.getNickname());
+			}
+		});
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 
 	public static void open() {
@@ -120,7 +135,7 @@ public class ClientFrame extends JFrame implements Observer{
 		}
 	}
 	
-	class MyActionListner implements ActionListener{
+	class MyActionListener implements ActionListener{
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (messageBox.getText().length() < 1 || messageBox.getText().equals("Type a message...")) {
@@ -137,17 +152,13 @@ public class ClientFrame extends JFrame implements Observer{
 		        t.start();
 				messageBox.setText("Type a message...");
 			} else {
-				//Server.startnewthread();
-				client.getOutSocket().println("<" + nickname + ">:  " + messageBox.getText() + "\n");
-				//chatBox.append("<" + nickname + ">:  " + messageBox.getText() + "\n");
+				client.getOutSocket().println("<" + nickname + ">:  " + messageBox.getText());
 				messageBox.setText("Type a message...");
 			}
 			if(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == messageBox) {
 				messageBox.setText("");
 			}
 		}
-		
-		
 	}
 
 	@Override
@@ -156,7 +167,12 @@ public class ClientFrame extends JFrame implements Observer{
 			return;
 		if (!(o instanceof String))
 			return;
+		if (((String)o).equals("EXITING_NOW")) {
+			setVisible(false);
+			dispose();
+			return;
+		}
 		String s = (String)o;
-		chatBox.append(s);
+		chatBox.append(s  + "\n");
 	}
 }

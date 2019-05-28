@@ -15,30 +15,30 @@ import java.util.ArrayList;
 
 import javax.swing.Timer;
 
-public class Server implements Runnable {
+import observer.Listener;
+import observer.Observer;
+
+public class Server implements Runnable,Listener {
 
 	private static Server serverInstance = null;
 	private ArrayList<PrintWriter> users;
 	private ArrayList<Socket> userSockets;
+	private ArrayList<Observer> observers;
 	private static ArrayList<String> userNames;
 	private static ServerSocket server_socket;
-	protected Thread nit;
+	
 
 	private Server() throws Exception {
 		users = new ArrayList<>();
 		userNames = new ArrayList<>();
+		observers = new ArrayList<>();
 		userSockets = new ArrayList<>();
 		server_socket = new ServerSocket(2020);
 
 		System.out.println("Otvoren port 2020");
 		
-		//ClientFrame.open();
 		Thread thread = new Thread(this);
 		thread.start();
-	}
-
-	public void stop() {
-		System.out.println("cao");
 	}
 
 	public void addClient(Socket socket, String name) {
@@ -47,27 +47,29 @@ public class Server implements Runnable {
 			users.add(out);
 			userSockets.add(socket);
 			userNames.add(name);
-			broadcast(null, "Client : " + name + " has just joined the chat.\n");
+			broadcast(null, "Client : " + name + " has just joined the chat.");
+			notify("Add: " + name);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	public void removeClient(Socket socket) {
+	public void removeClient(String nickname) {
 		try {
 			int i;
-			for (i = 0 ; i < userSockets.size() ; i++) {
-				if (userSockets.get(i) == socket)
+			for (i = 0 ; i < userNames.size() ; i++) {
+				if (userNames.get(i).equals(nickname))
 					break;
 			}
-			if (i == userSockets.size()) {
+			if (i == userNames.size()) {
 				System.out.println("Debug, should not be here.");
 				return;
 			}
-			broadcast(null, "Client : " + userNames.get(i) + " has left the chat.\n");
+			broadcast(null, "Client : " + userNames.get(i) + " has left the chat.");
 			users.remove(i);
 			userSockets.remove(i);
 			userNames.remove(i);
+			notify("Delete: " + nickname);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -75,8 +77,17 @@ public class Server implements Runnable {
 
 	public void broadcast(Object sender, Object message) {
 		int i = 0;
+		if (!(message instanceof String)) return;
+		if (((String) message).equals("EXITING_NOW")) {
+			for (int j = 0 ; j < users.size() ; j++) {
+				if ((Socket) sender == userSockets.get(j)) {
+					removeClient(userNames.get(j));
+					return;
+				}
+			}
+			return;
+		}
 		for (PrintWriter user : users) {
-			System.out.println("User : " + user);
 			if (sender == null) {
 				user.println((String) message);
 				continue;
@@ -90,8 +101,9 @@ public class Server implements Runnable {
 				tmp = "<You>";
 				tmp += split[1];
 				user.println(tmp);
-			} else
+			} else {
 				user.println((String) message);
+			}
 			i++;
 		}
 	}
@@ -108,10 +120,8 @@ public class Server implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("ovde");
 		try {
 			getInstance();
-			System.out.println(getInstance());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -123,11 +133,21 @@ public class Server implements Runnable {
 		return true;
 	}
 
+	public void stop() {
+		try {
+			if (server_socket != null)
+				server_socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	private String getUserNickname(String nick) {
 		String tmp = "";
 		int i = 1;
 		while (nick.charAt(i) != '>') {
 			tmp += nick.charAt(i);
+			i++;
 		}
 		return tmp;
 	}
@@ -144,7 +164,6 @@ public class Server implements Runnable {
 	public void run() {
 		try {
 			while(true) {
-				System.out.println("Ovde sam");
 				Socket incoming = server_socket.accept();
 	            Thread t = new Thread(new ServerThread(incoming,this));
 	            t.start();
@@ -168,5 +187,22 @@ public class Server implements Runnable {
 			ip = split[split.length - 1];
 		}
 		return ip;
+	}
+
+	@Override
+	public void addListener(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeListener(Observer observer) {
+		observers.remove(observer);
+	}
+
+	@Override
+	public void notify(Object o) {
+		for (Observer ob : observers) {
+			ob.update(o);
+		}
 	}
 }

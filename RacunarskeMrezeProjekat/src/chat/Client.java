@@ -21,7 +21,6 @@ public class Client implements Runnable,Listener{
 
 	public Client(String nickname) throws Exception {
 		String ip = getIPv4Address();
-		System.out.println(ip);
 		socket = new Socket(ip, 2020);
 		this.nickname = nickname;
 		inSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -69,13 +68,23 @@ public class Client implements Runnable,Listener{
 	}
 
 	@Override
+	public String toString() {
+		return nickname;
+	}
+	
+	@Override
 	public void run() {
 		try {
 			while (true) {
 				String msg = inSocket.readLine();
-				System.out.println("Server kaze: " + msg);
+				//System.out.println("Server kaze: " + msg);
 				notify(msg);
+				if (msg == null || msg.equals("Client: " + nickname + " has left the chat.")) break;
 			}
+			System.out.println("Zatvorio Clienta");
+			socket.close();
+			inSocket.close();
+			outSocket.close();
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

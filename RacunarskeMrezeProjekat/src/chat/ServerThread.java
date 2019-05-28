@@ -19,55 +19,26 @@ public class ServerThread implements Runnable {
 
 	@Override
 	public void run() {
-		System.out.println("Nesto ce ispisati : " + server);
-		/*try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			//String name = in.readLine();
-			server.addClient(socket, "a");
-			while (true) {
-				System.out.println("usao sam ovde");
-				String message = "";
-				message = in.readLine();
-				if (message.equals("EXITING_NOW"))
-					break;
-				server.broadcast(socket, message);
-			}
-			in.close();
-			socket.close();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}*/
 		try {
-			System.out.println("usao");
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			String inp = null;
-
-			inp = in.readLine();
+			String input = null;
+			input = in.readLine();
 			
-			server.addClient(socket, inp);
-			
-			
-			boolean isDone = true;
+			server.addClient(socket, input);
 
-			System.out.println("TYPE : BYE");
-			System.out.println();
-			while (isDone && ((inp = in.readLine()) != null)) {
-
-				System.out.println("Ovo " + inp);
-				if (inp.trim().equals("EXITING_NOW")) {
-					//System.out.println("THANKS FOR CONNECTING...Bye for now");
-					isDone = false;
+			while (true) {
+				input = in.readLine();
+				if (input == null) break;
+				if (input.trim().equals("EXITING_NOW")) {
+					server.broadcast(socket, input);
+					break;
 				}
-				server.broadcast(socket, inp);
+				server.broadcast(socket, input);
 			}
+			System.out.println("Zatvorio ServerThread");
+			socket.close();
+			in.close();
 		} catch (IOException e) {
-			/*try {
-				//server_socket.close();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}*/
 			e.printStackTrace();
 		}
 	}
