@@ -15,7 +15,7 @@ import java.util.ArrayList;
 
 import javax.swing.Timer;
 
-public class Server implements Runnable{
+public class Server implements Runnable {
 
 	private static Server serverInstance = null;
 	private ArrayList<PrintWriter> users;
@@ -26,14 +26,15 @@ public class Server implements Runnable{
 
 	private Server() throws Exception {
 		users = new ArrayList<>();
+		userNames = new ArrayList<>();
 		userSockets = new ArrayList<>();
 		server_socket = new ServerSocket(2020);
 
 		System.out.println("Otvoren port 2020");
 		
-		nit = new Thread(this);
-		nit.start();
-		ClientFrame.open();
+		//ClientFrame.open();
+		Thread thread = new Thread(this);
+		thread.start();
 	}
 
 	public void stop() {
@@ -45,7 +46,28 @@ public class Server implements Runnable{
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 			users.add(out);
 			userSockets.add(socket);
-			if (name != null) userNames.add(name);
+			userNames.add(name);
+			broadcast(null, "Client : " + name + " has just joined the chat.\n");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void removeClient(Socket socket) {
+		try {
+			int i;
+			for (i = 0 ; i < userSockets.size() ; i++) {
+				if (userSockets.get(i) == socket)
+					break;
+			}
+			if (i == userSockets.size()) {
+				System.out.println("Debug, should not be here.");
+				return;
+			}
+			broadcast(null, "Client : " + userNames.get(i) + " has left the chat.\n");
+			users.remove(i);
+			userSockets.remove(i);
+			userNames.remove(i);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -54,7 +76,12 @@ public class Server implements Runnable{
 	public void broadcast(Object sender, Object message) {
 		int i = 0;
 		for (PrintWriter user : users) {
-			if ((Socket)sender == userSockets.get(i)) {
+			System.out.println("User : " + user);
+			if (sender == null) {
+				user.println((String) message);
+				continue;
+			}
+			if ((Socket) sender == userSockets.get(i)) {
 				String tmp = "<";
 				if (!(message instanceof String))
 					return;
@@ -83,17 +110,19 @@ public class Server implements Runnable{
 	public static void main(String[] args) {
 		System.out.println("ovde");
 		try {
-			new Server();
+			getInstance();
+			System.out.println(getInstance());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
 	public static boolean isStarted() {
-		if (serverInstance == null) return false;
+		if (serverInstance == null)
+			return false;
 		return true;
 	}
-	
+
 	private String getUserNickname(String nick) {
 		String tmp = "";
 		int i = 1;
@@ -102,7 +131,7 @@ public class Server implements Runnable{
 		}
 		return tmp;
 	}
-	
+
 	public static boolean IsNameViable(String name) {
 		for (String s : userNames) {
 			if (s.equals(name))
@@ -114,21 +143,17 @@ public class Server implements Runnable{
 	@Override
 	public void run() {
 		try {
-			Socket socket = new Socket(toString(), 2020);
-			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			while(true) {
-				System.out.println("usao sam ovde");
-				String message = "";
-				message = in.readLine();
-				if (message.equals("EXITING_NOW"))
-					break;
-				broadcast(socket, message);
+				System.out.println("Ovde sam");
+				Socket incoming = server_socket.accept();
+	            Thread t = new Thread(new ServerThread(incoming,this));
+	            t.start();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		String ip = "";

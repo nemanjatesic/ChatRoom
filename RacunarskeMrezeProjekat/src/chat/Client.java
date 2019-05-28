@@ -6,9 +6,14 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.ArrayList;
 
-public class Client {
+import observer.Listener;
+import observer.Observer;
 
+public class Client implements Runnable,Listener{
+
+	private ArrayList<Observer> observers = new ArrayList<>();
 	private Socket socket;
 	private String nickname;
 	private BufferedReader inSocket;
@@ -24,10 +29,9 @@ public class Client {
 		
 		outSocket.println(nickname);
 
-		while (true) {
-			String msg = inSocket.readLine();
-			System.out.println("Server kaze: " + msg);
-		}
+		Thread thread = new Thread(this);
+		thread.start();
+		
 	}
 
 	public Socket getSocket() {
@@ -64,4 +68,34 @@ public class Client {
 		return ip;
 	}
 
+	@Override
+	public void run() {
+		try {
+			while (true) {
+				String msg = inSocket.readLine();
+				System.out.println("Server kaze: " + msg);
+				notify(msg);
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+
+	@Override
+	public void addListener(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeListener(Observer observer) {
+		observers.remove(observer);
+	}
+
+	@Override
+	public void notify(Object o) {
+		for (Observer ob : observers) {
+			ob.update(o);
+		}
+	}
 }

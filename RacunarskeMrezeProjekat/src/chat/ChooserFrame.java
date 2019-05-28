@@ -14,12 +14,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class ChooserFrame extends JFrame{
-
+	JButton btnClient;
+	
 	public ChooserFrame() {
 		setSize(450, 250);
 		JLabel lblClient = new JLabel("Create new Client : ");
 		JLabel lblServer = new JLabel("Create new Server : ");
-		JButton btnClient = new JButton("Client");
+		btnClient = new JButton("Client");
+		btnClient.setEnabled(false);
 		JButton btnServer = new JButton("Server");
 		JPanel panel = new JPanel(new GridBagLayout());
 		
@@ -34,6 +36,7 @@ public class ChooserFrame extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				ServerFrame.open();
+				btnClient.setEnabled(true);
 			}
 		});
 		

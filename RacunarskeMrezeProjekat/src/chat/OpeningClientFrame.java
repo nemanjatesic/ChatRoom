@@ -23,6 +23,7 @@ public class OpeningClientFrame extends JFrame {
 	public OpeningClientFrame() {
 		setSize(400, 370);
 		servers = new JComboBox<>();
+		servers.addItem(Server.getInstance());
 		tfUsername = new JTextField(15);
 		JLabel lblUsername = new JLabel("Enter a username : ");
 		JLabel lblServer = new JLabel("Choose server : ");
@@ -46,7 +47,10 @@ public class OpeningClientFrame extends JFrame {
 					JOptionPane.showMessageDialog(null, "Username is already taken!", "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				new ClientFrame(username);
+				setVisible(false);
+				dispose();
+				ClientFrame cf = new ClientFrame(username);
+				cf.setVisible(true);	
 			}
 		});
 

@@ -23,7 +23,10 @@ import javax.swing.JTextField;
 import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
 
-public class ClientFrame extends JFrame {
+import observer.Listener;
+import observer.Observer;
+
+public class ClientFrame extends JFrame implements Observer{
 
 	private Client client;
 	private JTextArea chatBox;
@@ -36,6 +39,7 @@ public class ClientFrame extends JFrame {
 		
 		try {
 			client = new Client(nickname);
+			client.addListener(this);
 		}catch (Exception e) {
 			e.printStackTrace();
 			return;
@@ -133,8 +137,9 @@ public class ClientFrame extends JFrame {
 		        t.start();
 				messageBox.setText("Type a message...");
 			} else {
-				//client.getOutSocket().println("<" + nickname + ">:  " + messageBox.getText() + "\n");
-				chatBox.append("<" + nickname + ">:  " + messageBox.getText() + "\n");
+				//Server.startnewthread();
+				client.getOutSocket().println("<" + nickname + ">:  " + messageBox.getText() + "\n");
+				//chatBox.append("<" + nickname + ">:  " + messageBox.getText() + "\n");
 				messageBox.setText("Type a message...");
 			}
 			if(KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner() == messageBox) {
@@ -143,5 +148,15 @@ public class ClientFrame extends JFrame {
 		}
 		
 		
+	}
+
+	@Override
+	public void update(Object o) {
+		if (o == null)
+			return;
+		if (!(o instanceof String))
+			return;
+		String s = (String)o;
+		chatBox.append(s);
 	}
 }

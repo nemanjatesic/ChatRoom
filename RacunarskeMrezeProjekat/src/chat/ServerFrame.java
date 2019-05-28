@@ -20,7 +20,7 @@ public class ServerFrame extends JFrame{
 	}
 	
 	public static void main(String[] args) {
-		
+		open();
 	}
 	
 	public Server getServer() {
