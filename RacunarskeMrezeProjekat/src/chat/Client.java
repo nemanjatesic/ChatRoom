@@ -8,10 +8,10 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import observer.Listener;
+import observer.Observable;
 import observer.Observer;
 
-public class Client implements Runnable,Listener{
+public class Client implements Runnable,Observable{
 
 	private ArrayList<Observer> observers = new ArrayList<>();
 	private Socket socket;
@@ -26,11 +26,12 @@ public class Client implements Runnable,Listener{
 		inSocket = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		outSocket = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
 		
+		// Sends clients nickname to ServerThread.
 		outSocket.println(nickname);
 
+		// Starts new Thread which will be listening to all Server broadcasts.
 		Thread thread = new Thread(this);
 		thread.start();
-		
 	}
 
 	public Socket getSocket() {
@@ -69,11 +70,11 @@ public class Client implements Runnable,Listener{
 		try {
 			while (true) {
 				String msg = inSocket.readLine();
-				//System.out.println("Server kaze: " + msg);
+				// Notifies ClientFrame with message that client has received.
 				notify(msg);
 				if (msg == null || msg.equals("Client: " + nickname + " has left the chat.")) break;
 			}
-			System.out.println("Zatvorio Clienta");
+			System.out.println("Close Client.");
 			socket.close();
 			inSocket.close();
 			outSocket.close();
@@ -84,12 +85,12 @@ public class Client implements Runnable,Listener{
 	}
 
 	@Override
-	public void addListener(Observer observer) {
+	public void addObserver(Observer observer) {
 		observers.add(observer);
 	}
 
 	@Override
-	public void removeListener(Observer observer) {
+	public void removeObserver(Observer observer) {
 		observers.remove(observer);
 	}
 

@@ -15,10 +15,12 @@ import java.util.ArrayList;
 
 import javax.swing.Timer;
 
-import observer.Listener;
+import observer.Observable;
 import observer.Observer;
+import tree.ClientNode;
+import tree.ServerNode;
 
-public class Server implements Runnable,Listener {
+public class Server implements Runnable,Observable {
 
 	private static Server serverInstance = null;
 	private ArrayList<PrintWriter> users;
@@ -35,7 +37,7 @@ public class Server implements Runnable,Listener {
 		userSockets = new ArrayList<>();
 		server_socket = new ServerSocket(2020);
 
-		System.out.println("Otvoren port 2020");
+		System.out.println("Port 2020 is now opened.");
 		
 		Thread thread = new Thread(this);
 		thread.start();
@@ -47,7 +49,9 @@ public class Server implements Runnable,Listener {
 			users.add(out);
 			userSockets.add(socket);
 			userNames.add(name);
+			// Broadcasts that a new client has just joined to all clients that are already in chat room.
 			broadcast(null, "Client : " + name + " has just joined the chat.");
+			// Notifies ServerFrame that it needs to add one more client to the list.
 			notify("Add: " + name);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -65,10 +69,12 @@ public class Server implements Runnable,Listener {
 				System.out.println("Debug, should not be here.");
 				return;
 			}
+			// Broadcasts that client has just left chat to all clients that are already in chat room.
 			broadcast(null, "Client : " + userNames.get(i) + " has left the chat.");
 			users.remove(i);
 			userSockets.remove(i);
 			userNames.remove(i);
+			// Notifies ServerFrame that it needs to delete this client from the list.
 			notify("Delete: " + nickname);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -78,6 +84,9 @@ public class Server implements Runnable,Listener {
 	public void broadcast(Object sender, Object message) {
 		int i = 0;
 		if (!(message instanceof String)) return;
+		if (sender != null && !(sender instanceof Socket)) return;
+		// If one of the clients just exited it will tell server "EXITING_NOW" and server will find 
+		// that client in its list and call removeClient() function to delete it from its base.
 		if (((String) message).equals("EXITING_NOW")) {
 			for (int j = 0 ; j < users.size() ; j++) {
 				if ((Socket) sender == userSockets.get(j)) {
@@ -87,6 +96,11 @@ public class Server implements Runnable,Listener {
 			}
 			return;
 		}
+		// Updates ClientNode with new text client has written.
+		if (sender != null) ((ClientNode)(((ServerNode)(ServerFrame.getInstance().getTreeModel().getRoot())).getChildByString(getUserNickname((String)message)))).appendText((String)message);
+		
+		// Loops through all connected clients and with their PrintWriters sends them what
+		// other client has said, or if it was that client that sent it it changes the name to "<You>"
 		for (PrintWriter user : users) {
 			if (sender == null) {
 				user.println((String) message);
@@ -161,7 +175,9 @@ public class Server implements Runnable,Listener {
 	            t.start();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			// This Exception is thrown when application is closed since it was waiting for incoming socket.
+			
+			//e.printStackTrace();
 		}
 	}
 
@@ -182,12 +198,12 @@ public class Server implements Runnable,Listener {
 	}
 
 	@Override
-	public void addListener(Observer observer) {
+	public void addObserver(Observer observer) {
 		observers.add(observer);
 	}
 
 	@Override
-	public void removeListener(Observer observer) {
+	public void removeObserver(Observer observer) {
 		observers.remove(observer);
 	}
 

@@ -5,7 +5,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -16,7 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.Timer;
 import javax.swing.WindowConstants;
 
 public class OpeningClientFrame extends JFrame {
@@ -24,7 +22,7 @@ public class OpeningClientFrame extends JFrame {
 	private JTextField tfUsername;
 
 	public OpeningClientFrame() {
-		setSize(400, 370);
+		setSize(400, 250);
 		servers = new JComboBox<>();
 		servers.addItem(Server.getInstance());
 		tfUsername = new JTextField(20);

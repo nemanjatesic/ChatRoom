@@ -35,8 +35,11 @@ public class ChooserFrame extends JFrame{
 		btnServer.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				if (!Server.isStarted()) 
-					ServerFrame.open();
+				if (!Server.isStarted()) {
+					ServerFrame.getInstance();
+					ServerFrame.getInstance().initTree();
+					ServerFrame.getInstance().initFrame();
+				}
 				btnClient.setEnabled(true);
 			}
 		});

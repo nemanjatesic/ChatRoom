@@ -35,7 +35,7 @@ public class ServerThread implements Runnable {
 				}
 				server.broadcast(socket, input);
 			}
-			System.out.println("Zatvorio ServerThread");
+			System.out.println("ServerThread closed.");
 			socket.close();
 			in.close();
 		} catch (IOException e) {
